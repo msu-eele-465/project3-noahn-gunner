@@ -2,15 +2,18 @@
 #include <msp430.h>
 #include <stdbool.h>
 
-int main(void) {
-    WDTCTL = WDTPW | WDTHOLD; // stop watchdog timer
-
-    // initialize ports
+// initialize ports
+int init_keypad_ports(void) {
     // rows (outputs for row_cycle)
     P1DIR |= BIT2; // set 1.2 as output
     P1DIR |= BIT3; // set 1.3 as output
     P3DIR |= BIT4; // set 3.4 as output
-    P4DIR |= BIT5; // set 4.5 as output
+    P4DIR |= BIT5; // set 4.5 as output 
+     
+    P1OUT &= ~BIT2; // turn 1.2 off
+    P1OUT &= ~BIT3; // turn 1.3 off
+    P3OUT &= ~BIT4; // turn 3.4 off
+    P4OUT &= ~BIT5; // turn 4.5 off
 
     // columns (inputs for polling)
     P5DIR &= ~BIT2; // set 5.2 as output
@@ -29,9 +32,18 @@ int main(void) {
     P1REN |= BIT6;  // enable pull up/down resistor
     P1OUT |= BIT6;  // pull up resistor
 
-    PM5CTL0 &= ~LOCKLMP5; //turn on GPIO
+    return 0;
+}
 
-    while(true) {
-        
-    }
+int row_cycle(void) {
+    P1OUT |= BIT2; // turn 1.2 on
+    P1OUT &= ~BIT2; // turn 1.2 off
+    P1OUT |= BIT3; // turn 1.3 on
+    P1OUT &= ~BIT3; // turn 1.3 off
+    P3OUT |= BIT4; // turn 3.4 on
+    P3OUT &= ~BIT4; // turn 3.4 off
+    P4OUT |= BIT5; // turn 4.5 on
+    P4OUT &= ~BIT5; // turn 4.5 off
+
+    return 0;
 }
