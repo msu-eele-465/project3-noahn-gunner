@@ -3,103 +3,84 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define Max_PWM (1000) // max brightness
-#define Max_Count (40) // color update interval
-// Initial PWM values for Red, Green, and Blue
-int rv = 500;
-int gv = 0;
-int bv = 500;
+#define Max_PWM (1000) // Max brightness
+#define Max_Count (40) // Color update interval
 
-// Change step sizes for each color
-int drv = -50;
-int dbv = 50;
-int dgv = 50;
+// RGB LED states
+#define STATE_LOCKED 0
+#define STATE_UNLOCKING 1
+#define STATE_UNLOCKED 2
 
-int c = 0; // Cycle counter for color updates
+volatile uint8_t system_state = STATE_LOCKED; // Initial state
+
+// Function Prototypes
+void updateRGB(uint16_t r, uint16_t g, uint16_t b);
+void setupButtonInterrupt(void);
 
 // Function to update RGB LED colors
-inline void update_colors(void) {
-    rv += drv;
-    bv += dbv;
-    gv += dgv;
-
-    if (rv > Max_PWM) { 
-        rv = Max_PWM; 
-        drv = -drv; 
-    }
-    else if (rv < 0) { 
-        rv = 0; 
-        drv = -drv; 
-    }
-    if (bv > Max_PWM) { 
-        bv = Max_PWM; 
-        dbv = -dbv; 
-    }
-    else if (bv < 0) { 
-        bv = 0; 
-        dbv = -dbv; 
-    }
-    if (gv > Max_PWM) { 
-        gv = Max_PWM; 
-        dgv = -dgv; 
-    }
-    else if (gv < 0) { 
-        gv = 0; 
-        dgv = -dgv; 
-    }
-
-    // Update PWM duty cycle for Timer3_B7
-    TB3CCR1 = rv;  // Red (P6.0)
-    TB3CCR2 = gv;  // Green (P6.1)
-    TB3CCR3 = bv;  // Blue (P6.2)
+void updateRGB(uint16_t r, uint16_t g, uint16_t b) {
+    TB3CCR1 = r;  // Red (P6.0)
+    TB3CCR2 = g;  // Green (P6.1)
+    TB3CCR3 = b;  // Blue (P6.2)
 }
 
+// ISR for Button Press (S1 - P4.1)
+#pragma vector = PORT4_VECTOR
+__interrupt void ISR_Port4_S1(void) {
+    system_state = (system_state + 1) % 3; // Cycle through 3 states
 
-int main(void)
-{
+    // Set RGB LED color based on state
+    switch (system_state) {
+        case STATE_LOCKED:
+            updateRGB(196 * 8, 62 * 8, 29 * 8);  // #c43e1d
+            break;
+        case STATE_UNLOCKING:
+            updateRGB(196 * 8, 146 * 8, 29 * 8); // #c4921d
+            break;
+        case STATE_UNLOCKED:
+            updateRGB(29 * 8, 162 * 8, 196 * 8); // #1da2c4
+            break;
+    }
+
+    P4IFG &= ~BIT1; // Clear interrupt flag
+}
+
+void setupButtonInterrupt(void) {
+    P4DIR &= ~BIT1;  // Set P4.1 (S1) as input
+    P4REN |= BIT1;
+    P4OUT |= BIT1;
+    P4IES |= BIT1;
+    P4IFG &= ~BIT1;
+    P4IE |= BIT1;
+}
+
+int main(void) {
     // Stop watchdog timer
-    WDTCTL = WDTPW | WDTHOLD;               // Stop watchdog timer
+    WDTCTL = WDTPW | WDTHOLD;
 
-    //-- Setup Ports
-    P6DIR |= BIT0 | BIT1 | BIT2;    // Set P6.0, P6.1, P6.2 as output
-    P6SEL0 |= BIT0 | BIT1 | BIT2;   // Assign to Timer3_B7
+    //-- Setup Ports for RGB LED
+    P6DIR |= BIT0 | BIT1 | BIT2;   // Set P6.0, P6.1, P6.2 as output
+    P6SEL0 |= BIT0 | BIT1 | BIT2;  // Assign to Timer3_B7
     P6SEL1 &= ~(BIT0 | BIT1 | BIT2); // Ensure primary function mode
     
-    // Disable the GPIO power-on default high-impedance mdoe to activate
-    // previously configure port settings
+    // Disable GPIO high-impedance mode
     PM5CTL0 &= ~LOCKLPM5;
 
-    //-- Configure Timer3_B7
+    // Configure Timer3_B7 for PWM
     TB3CCR0 = Max_PWM;
     TB3CCTL1 = OUTMOD_7;
     TB3CCTL2 = OUTMOD_7;
     TB3CCTL3 = OUTMOD_7;
 
-    // Set initial dudy cycle
-    TB3CCR1 = rv;
-    TB3CCR2 = gv;
-    TB3CCR3 = bv;
+    // Set initial state to "Locked" color
+    updateRGB(196 * 4, 62 * 4, 29 * 4); // #c43e1d
 
     TB3CTL = TBSSEL_2 | MC_1;  // Use SMCLK, Up mode
 
-    // Enable Timer3_B7 interrupts (TB3.0 overflow)
-    TB3CTL |= TBIE;
+    setupButtonInterrupt(); // Setup S1 button interrupt
 
     // Enable low-power mode with global interrupts
     _BIS_SR((LPM0_bits | GIE));
 
-    while(true)
-    {
-    }
-}
-
-// Interrupt Service Routine for Timer3_B7 Overflow
-__attribute__((interrupt(TIMER3_B1_VECTOR)))
-void tim3_b1_isr(void) {
-    ++c;
-    if (c >= Max_Count) {
-        update_colors(); // Update RGB values
-        c = 0;
-    }
-    TB3CTL &= ~TBIFG; // Clear interrupt flag
+    while (true) {}
 }
