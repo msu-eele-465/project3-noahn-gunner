@@ -1,4 +1,5 @@
 #include <msp430.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include "../src/keypad.c"
 #include "intrinsics.h"
@@ -29,13 +30,45 @@ int main(void)
 __interrupt void ISR_Port1_Column(void) {
     col_masking();
     if (col_1 == 0) {
-        current_key = '1';
+        if (current_row == 1) {
+            current_key = '1';
+        } else if (current_row == 2) {
+            current_key = '4';
+        } else if (current_row == 3) {
+            current_key = '7';
+        } else if (current_row == 4) {
+            current_key = '*';
+        }
     } else if (col_2 == 0) {
-        current_key = '2';
+        if (current_row == 1) {
+            current_key = '2';
+        } else if (current_row == 2) {
+            current_key = '5';
+        } else if (current_row == 3) {
+            current_key = '8';
+        } else if (current_row == 4) {
+            current_key = '0';
+        }
     } else if (col_3 == 0) {
-        current_key = '3';
+        if (current_row == 1) {
+            current_key = '3';
+        } else if (current_row == 2) {
+            current_key = '6';
+        } else if (current_row == 3) {
+            current_key = '9';
+        } else if (current_row == 4) {
+            current_key = '#';
+        }
     } else if (col_4 == 0) {
-        current_key = 'A';
+        if (current_row == 1) {
+            current_key = 'A';
+        } else if (current_row == 2) {
+            current_key = 'B';
+        } else if (current_row == 3) {
+            current_key = 'C';
+        } else if (current_row == 4) {
+            current_key = 'D';
+        }
     } else {
         current_key = 'N';
     }
