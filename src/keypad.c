@@ -7,11 +7,7 @@ char current_key = 'N';
 volatile int col_1 = BIT2;
 volatile int col_2 = BIT3;
 volatile int col_3 = BIT6;
-volatile int col_4 = BIT7;
-bool row_1 = false;
-bool row_2 = false;
-bool row_3 = false;
-bool row_4 = false;
+volatile unsigned int col_4 = BIT7;
 
 int init_keypad_ports(void) {
     // rows (outputs for row_cycle)
@@ -59,21 +55,13 @@ int init_keypad_irqs(void) {
 }
 
 int row_cycle(void) {
-    row_1 = true;
     P3OUT |= BIT4; // turn 3.4 on
-    row_1 = false;
     P3OUT &= ~BIT4; // turn 3.4 off
-    row_2 = true;
     P4OUT |= BIT5; // turn 4.5 on
-    row_2 = false;
     P4OUT &= ~BIT5; // turn 4.5 off
-    row_3 = true;
     P5OUT |= BIT2; // turn 5.2 on
-    row_3 = false;
     P5OUT &= ~BIT2; // turn 5.2 off
-    row_4 = true;
     P3OUT |= BIT6; // turn 3.6 on
-    row_4 = false;
     P3OUT &= ~BIT6; // turn 3.6 off
 
     return 0;
