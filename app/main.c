@@ -18,7 +18,8 @@ int main(void)
     __enable_interrupt();
 
     while(true)
-    {
+    {  
+        col_masking();
         row_cycle();
     }
 }
@@ -26,6 +27,21 @@ int main(void)
 //----Interrupt Service Routines
 #pragma vector = PORT1_VECTOR
 __interrupt void ISR_Port1_Column(void) {
-    
+    col_masking();
+    if (col_1 == 0) {
+        current_key = '1';
+    } else if (col_2 == 0) {
+        current_key = '2';
+    } else if (col_3 == 0) {
+        current_key = '3';
+    } else if (col_4 == 0) {
+        current_key = 'A';
+    } else {
+        current_key = 'N';
+    }
     P1IFG &= ~BIT2;
+    P1IFG &= ~BIT3;
+    P1IFG &= ~BIT6;
+    P1IFG &= ~BIT7;
+    
 }
