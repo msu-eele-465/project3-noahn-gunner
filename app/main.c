@@ -21,6 +21,7 @@ int main(void)
     while(true)
     {  
         col_masking();
+        lock_state();
         row_cycle();
     }
 }

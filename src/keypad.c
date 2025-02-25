@@ -10,7 +10,8 @@ volatile int col_3 = BIT6;
 volatile unsigned int col_4 = BIT7;
 volatile current_row = 0;
 // 0 = locked, 1 = unlocking, 2 = unlocked
-volatile int lock_state = 0;
+volatile int locked_state = 0;
+volatile int password_unlock = false;
 
 // initialize ports
 int init_keypad_ports(void) {
@@ -97,7 +98,16 @@ int col_masking(void) {
 }
 
 // determine lock state
-int lock_state() {
-    
+int lock_state(void) {
+    if ((current_key == 'D') || (!password_unlock)) {
+        locked_state = 0;
+        password_unlock = false;
+    } else {
+        locked_state = 2;
+    }
+    if (current_key == '1') {
+        password_unlock = true;
+    }
+    return 0;
 }
 
