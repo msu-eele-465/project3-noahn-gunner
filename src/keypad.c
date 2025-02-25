@@ -2,14 +2,17 @@
 #include <msp430.h>
 #include <stdbool.h>
 
-// initialize ports
+// initialize vars
 char current_key = 'N';
 volatile int col_1 = BIT2;
 volatile int col_2 = BIT3;
 volatile int col_3 = BIT6;
 volatile unsigned int col_4 = BIT7;
 volatile current_row = 0;
+// 0 = locked, 1 = unlocking, 2 = unlocked
+volatile int lock_state = 0;
 
+// initialize ports
 int init_keypad_ports(void) {
     // rows (outputs for row_cycle)
     P3DIR |= BIT4; // set 3.4 as output
@@ -43,6 +46,7 @@ int init_keypad_ports(void) {
     return 0;
 }
 
+// init irqs
 int init_keypad_irqs(void) {
     P1IFG &= ~BIT2; // clear port 1.2 IRQ flag
     P1IE |= BIT2;   // enable 1.2 IRQ 
@@ -55,23 +59,30 @@ int init_keypad_irqs(void) {
     return 0;
 }
 
+// cycle through rows turn on/off
 int row_cycle(void) {
     current_row = 1;
     P3OUT |= BIT4; // turn 3.4 on
     P3OUT &= ~BIT4; // turn 3.4 off
+    int i;
+    for(i=0; i<10000; i++) {}
     current_row = 2;
     P4OUT |= BIT5; // turn 4.5 on
     P4OUT &= ~BIT5; // turn 4.5 off
+    for(i=0; i<10000; i++) {}
     current_row = 3;
     P5OUT |= BIT2; // turn 5.2 on
     P5OUT &= ~BIT2; // turn 5.2 off
+    for(i=0; i<10000; i++) {}
     current_row = 4;
     P3OUT |= BIT6; // turn 3.6 on
     P3OUT &= ~BIT6; // turn 3.6 off
+    for(i=0; i<10000; i++) {}
 
     return 0;
 }
 
+// mask columns for easier reading
 int col_masking(void) {
     col_1 =  P1IN;
     col_1 &= BIT2;
@@ -83,5 +94,10 @@ int col_masking(void) {
     col_4 &= BIT7;
 
     return 0;
+}
+
+// determine lock state
+int lock_state() {
+    
 }
 
