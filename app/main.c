@@ -9,6 +9,9 @@
 // Variables
 volatile uint16_t base_period_ms = DEFAULT_BASE_PERIOD_MS;  // Stores the base transition period (in ms)
 volatile uint8_t toggle_state = 0b10101010;  // Bit flip pattern state
+volatile uint8_t counter = 0;  // Up counter starting at 0
+volatile uint8_t pattern_step = 0;  // Track 0.5 × base transition period
+volatile uint8_t current_pattern = 2;  // Set Pattern 2 as active
 
 // Timer3_B7 Configuration
 void setupTimer(void) {
@@ -21,25 +24,12 @@ void setupTimer(void) {
 // Function to Update Timer Period Dynamically
 void updateTimerPeriod(uint16_t new_period_ms) {
     base_period_ms = new_period_ms;  // Store new value
-    
+    pattern_step = 0;  // Reset step counter to sync with new period
+
     TB3CTL &= ~MC_1;   // Stop the timer
-    TB3CCR0 = 0;   // Clear the timer (to apply new CCR0)
-    TB3CCR0 = (base_period_ms * (SMCLK_FREQ / 8 / 1000));  // Correct scaling
+    TB3CCR0 = (base_period_ms * (SMCLK_FREQ / 8 / 1000));  // Apply new period
     TB3CTL |= MC_1;    // Restart the timer in Up mode
 }
-
-
-
-
-// Function to Set LED Bar Output
-void setLEDs(uint8_t pattern) {
-    P1OUT = (P1OUT & ~(BIT4 | BIT1)) | ((pattern & 0x01) ? BIT4 : 0) | ((pattern & 0x20) ? BIT1 : 0);
-    P5OUT = (P5OUT & ~(BIT3 | BIT1 | BIT0 | BIT4)) |
-            ((pattern & 0x02) ? BIT3 : 0) | ((pattern & 0x04) ? BIT1 : 0) |
-            ((pattern & 0x08) ? BIT0 : 0) | ((pattern & 0x10) ? BIT4 : 0);
-    P3OUT = (P3OUT & ~(BIT5 | BIT1)) | ((pattern & 0x40) ? BIT5 : 0) | ((pattern & 0x80) ? BIT1 : 0);
-}
-
 
 
 
@@ -47,9 +37,8 @@ void setLEDs(uint8_t pattern) {
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;  // Stop watchdog timer
 
-    P1DIR |= BIT4 | BIT1;
-    P5DIR |= BIT3 | BIT1 | BIT0 | BIT4;
-    P3DIR |= BIT5 | BIT1;
+    P3DIR |= 0xFF;  // Set P3.0 - P3.7 as outputs
+    P3OUT = 0x00;   // Start with all LEDs off
 
     setupTimer();  // Initialize Timer3_B7
 
@@ -81,16 +70,21 @@ int main(void) {
 // Timer3_B7 ISR (Handles Pattern Updates)
 #pragma vector = TIMER3_B0_VECTOR
 __interrupt void ISR_TB3_CCR0(void) {
-    toggle_state ^= 0xFF;  // Flip all bits
-    setLEDs(toggle_state); // Apply flipped pattern
-
-    TB3CCR0 = base_period_ms * (SMCLK_FREQ / 1000);  // Update dynamically
+    if (current_pattern == 2) {  
+        P3OUT = counter;  // Directly write counter value to P3.0 - P3.7
+        counter++;  // Increment counter (rolls over at 255 automatically)
+    }
     TB3CCTL0 &= ~CCIFG;  // Clear interrupt flag
 }
+
+
+
+
 
 #pragma vector = PORT4_VECTOR
 __interrupt void ISR_Port4_S1(void)
 {
+    counter = 0;
     updateTimerPeriod(500);  // Change to 0.5s and see if toggle speeds up
     P4IFG &= ~BIT1;    // Clear interrupt flag
 }
