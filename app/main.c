@@ -10,8 +10,10 @@
 volatile uint16_t base_period_ms = DEFAULT_BASE_PERIOD_MS;  // Stores the base transition period (in ms)
 volatile uint8_t toggle_state = 0b10101010;  // Bit flip pattern state
 volatile uint8_t counter = 0;  // Up counter starting at 0
-volatile uint8_t pattern_step = 0;  // Track 0.5 × base transition period
-volatile uint8_t current_pattern = 2;  // Set Pattern 2 as active
+volatile uint8_t pattern_step = 0;
+volatile uint8_t current_pattern = 0;
+static const uint8_t steps[] = {0b00011000, 0b00100100, 0b01000010, 0b10000001, 0b01000010, 0b00100100};  // In & Out Pattern
+volatile uint8_t step_index = 0;  // Tracks step in Pattern 3
 
 // Timer3_B7 Configuration
 void setupTimer(void) {
@@ -23,12 +25,16 @@ void setupTimer(void) {
 
 // Function to Update Timer Period Dynamically
 void updateTimerPeriod(uint16_t new_period_ms) {
-    base_period_ms = new_period_ms;  // Store new value
-    pattern_step = 0;  // Reset step counter to sync with new period
+    __bic_SR_register(GIE); // Disable global interrupts
 
+    base_period_ms = new_period_ms;  // Store new value
+    
     TB3CTL &= ~MC_1;   // Stop the timer
-    TB3CCR0 = (base_period_ms * (SMCLK_FREQ / 8 / 1000));  // Apply new period
+    TB3CCR0 = 0;   // Clear CCR0 before updating
+    TB3CCR0 = (base_period_ms * (SMCLK_FREQ / 8 / 1000));  // Correct scaling
     TB3CTL |= MC_1;    // Restart the timer in Up mode
+
+    __bis_SR_register(GIE); // Re-enable global interrupts
 }
 
 
@@ -58,33 +64,51 @@ int main(void) {
     __bis_SR_register(GIE | LPM0_bits);  // Enable global interrupts & low-power mode
 
     while (1) {
-        // Example: Change speed after some time (for testing)
-        //__delay_cycles(5000000);
-        
-
-        
-
+         
     }
 }
 
 // Timer3_B7 ISR (Handles Pattern Updates)
 #pragma vector = TIMER3_B0_VECTOR
 __interrupt void ISR_TB3_CCR0(void) {
-    if (current_pattern == 2) {  
-        P3OUT = counter;  // Directly write counter value to P3.0 - P3.7
-        counter++;  // Increment counter (rolls over at 255 automatically)
+    static uint8_t pattern_step = 0;  // Keeps track of steps within base period
+    switch (current_pattern) {
+        case 0:                         // Static Pattern
+            P3OUT = 0b10101010;
+            break;
+        
+        case 1:                         // Toggle Pattern
+            toggle_state ^= 0xFF;   // Flip bits
+            P3OUT = toggle_state;
+            break;
+        
+        case 2:                         // Up Counter
+            P3OUT = counter;
+            counter++;
+            break;
+        
+        case 3:                         // In & Out
+            P3OUT = steps[step_index];
+            step_index = (step_index + 1) % 6;
+            break;
     }
+
+    /*    
+    if (current_pattern == 2) {  
+        if (pattern_step % 2 == 0) {  // Only update every other ISR call (0.5× base period)
+            P3OUT = counter;  // Write counter value to LEDs
+            counter++;  // Increment counter
+        }
+        pattern_step++;  // Increment step counter
+    }
+    */
+
     TB3CCTL0 &= ~CCIFG;  // Clear interrupt flag
 }
 
 
-
-
-
 #pragma vector = PORT4_VECTOR
-__interrupt void ISR_Port4_S1(void)
-{
-    counter = 0;
-    updateTimerPeriod(500);  // Change to 0.5s and see if toggle speeds up
-    P4IFG &= ~BIT1;    // Clear interrupt flag
+__interrupt void ISR_Port4_S1(void) {
+    current_pattern = (current_pattern + 1) % 4; // Cycle through 4 patterns (0-3)
+    P4IFG &= ~BIT1;  // Clear interrupt flag
 }
