@@ -1,0 +1,62 @@
+Initialize LED bar ports as outputs (P1.4, P5.3, P5.1, P5.0, P5.4, P1.1, P3.5, P3.1)
+Initialize timer for LED pattern transitions
+Set default base transition period to 1s
+
+Main loop
+if system is LOCKED then
+    turn off all LEDs
+else if system is UNLOCKED then
+    if key pressed
+        check if key corresponds to pattern number
+            if pattern is already active then   
+                restart pattern from beginning
+            else
+                start the new pattern
+            endif
+        else if key is "A" then
+            decrease base transition period by 0.25s
+        else if key is "B" then
+            increase base transition period by 0.25s
+        endif
+    endif
+
+    execute currently selected LED pattern
+endif
+end main loop
+
+
+LED Patterns
+// Pattern 0
+set LED bar to 10101010
+
+// Pattern 1
+Step 0: Set LED bar to 10101010
+Wait (base transition period)
+Step 1: Set LED bar to 01010101
+Wait (base transition period)
+Repeat...
+
+// Pattern 2
+Initialize counter to 0
+WHILE pattern is active:
+    Display counter as an 8-bit binary value
+    Wait (0.5 * base transition period)
+    Increment counter (rollover at 255)
+
+// Pattern 3
+Step 0: 00011000
+Step 1: 00100100
+Step 2: 01000010
+Step 3: 10000001
+Step 4: 01000010
+Step 5: 00100100
+Wait (0.5 * base transition period) between steps
+Repeat...
+
+
+
+Timer interrupt
+IF timer interrupt triggers THEN
+    Increment pattern step (based on the base transition period)
+    Apply the new LED pattern state
+ENDIF
