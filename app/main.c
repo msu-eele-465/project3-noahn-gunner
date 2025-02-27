@@ -15,6 +15,7 @@ static unsigned int pattern_step2 = 0;
 static unsigned int pattern_step3 = 0;
 static led_pattern_t current_pattern = Pattern_Off;
 static bool pattern_active = false;
+volatile int prev_state = 0;
 
 // -- Patterns
 static const unsigned char Pattern_0 = 0b10101010;
@@ -63,16 +64,26 @@ void increaseTimerPeriod(void) {
     if (base_period < 1) {
         updateTimerPeriod(base_period + 0.25);
     }
+    LED_speed = 0;
 }
 
 void decreaseTimerPeriod(void) {
     if (base_period > 0.25) {
         updateTimerPeriod(base_period - 0.25);
     }
+    LED_speed = 0;
+}
+
+void syncTimerPeriod(void) {
+    if (LED_speed == 1) {
+        increaseTimerPeriod();
+    } else if (LED_speed == 2) {
+        decreaseTimerPeriod();
+    }
 }
 
 void array_Off(void) {                              // USE WHEN SYSTEM IS LOCKED
-    P3OUT |= 0x00;
+    P3OUT = 0x00;
     pattern_active = false;
     current_pattern = Pattern_Off;
 }
@@ -158,6 +169,21 @@ int state_sync(void) {
     return 0;
 }
 
+int sync_LED(void) {
+    if ((prev_state != 0) && (locked_state == 0)) {
+        array_Off();
+    } else if ((prev_state != 1) && (locked_state == 1)) {
+        array_Off();
+    } else if ((prev_state != 2) && (locked_state == 2)) {
+        selectPattern(Pattern_1_Toggle);
+    } else if ((prev_state != 3) && (locked_state == 3)) {
+        selectPattern(Pattern_2_Up);
+    } else if ((prev_state != 4) && (locked_state == 4)) {
+        selectPattern(Pattern_3_In_Out);
+    }
+    return 0;
+}
+
 int main(void) {
     // Stop watchdog timer
     WDTCTL = WDTPW | WDTHOLD;               // Stop watchdog timer
@@ -197,11 +223,14 @@ int main(void) {
         
         lock_state();
         state_sync();
+        sync_LED();
         LEDState();
+        syncTimerPeriod();
 
         for(i=0; i<10000; i++) {}
         
         prev_key = current_key;
+        prev_state = locked_state;
         
         for(i=0; i<10000; i++) {}
         

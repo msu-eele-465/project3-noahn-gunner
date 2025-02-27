@@ -15,6 +15,8 @@ volatile int locked_state = 0;
 volatile int password_unlock = false;
 // current index of password
 volatile int pass_inx_char = 0;
+// 0 = stay same, 1 = faster, 2 = slower
+volatile int LED_speed = 0;
 
 // initialize ports
 int init_keypad_ports(void) {
@@ -157,6 +159,11 @@ int button_logic() {
         locked_state = 7;
     } else if ((current_key == '7') && (prev_key != '7')) {
         locked_state = 8;
+    } else if ((current_key == '*') && (prev_key != '*')) {
+        LED_speed = 1;
+    } else if ((current_key == '#') && (prev_key != '#')) {
+        LED_speed = 2;
+        
     }
 
     return 0;
