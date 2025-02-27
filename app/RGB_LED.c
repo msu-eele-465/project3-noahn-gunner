@@ -23,6 +23,24 @@ void LEDState(void) {
         case STATE_UNLOCKED:
             updateRGB(29, 162, 196); // #1da2c4
             break;
+        case STATE_UNLOCKED_2:
+            updateRGB(0, 255, 0);    // #00ff00
+            break;
+        case STATE_UNLOCKED_3:
+            updateRGB(255, 0, 255);  // #ff00ff
+            break;
+        case STATE_UNLOCKED_4:
+            updateRGB(255, 127, 0);  // #ff7f00
+            break;
+        case STATE_UNLOCKED_5:
+            updateRGB(0, 255, 255);// #00ffff
+            break;
+        case STATE_UNLOCKED_6:
+            updateRGB(255, 255, 255);// #ffffff
+            break;
+        case STATE_UNLOCKED_7:
+            updateRGB(0, 0, 0);  // #000000
+            break;
     }
 }
 

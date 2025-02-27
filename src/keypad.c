@@ -135,8 +135,29 @@ int lock_state(void) {
     } else {
         // actual functionality logic goes here
         // or maybe in another function idk yet lmao
+        button_logic();
     }
     
     return 0;
 }
 
+// unlocked funtionality
+int button_logic() {
+    if ((current_key == '1') && (prev_key != '1')) {
+        locked_state = 2;
+    } else if ((current_key == '2') && (prev_key != '2')) {
+        locked_state = 3;
+    } else if ((current_key == '3') && (prev_key != '3')) {
+        locked_state = 4;
+    } else if ((current_key == '4') && (prev_key != '4')) {
+        locked_state = 5;
+    } else if ((current_key == '5') && (prev_key != '5')) {
+        locked_state = 6;
+    } else if ((current_key == '6') && (prev_key != '6')) {
+        locked_state = 7;
+    } else if ((current_key == '7') && (prev_key != '7')) {
+        locked_state = 8;
+    }
+
+    return 0;
+}

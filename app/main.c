@@ -14,6 +14,18 @@ int state_sync(void) {
         system_state = STATE_UNLOCKING;
     } else if (locked_state == 2) {
         system_state = STATE_UNLOCKED;
+    } else if (locked_state == 3) {
+        system_state = STATE_UNLOCKED_2;
+    } else if (locked_state == 4) {
+        system_state = STATE_UNLOCKED_3;
+    } else if (locked_state == 5) {
+        system_state = STATE_UNLOCKED_4;
+    } else if (locked_state == 6) {
+        system_state = STATE_UNLOCKED_5;
+    } else if (locked_state == 7) {
+        system_state = STATE_UNLOCKED_6;
+    } else if (locked_state == 8) {
+        system_state = STATE_UNLOCKED_7;
     }
     return 0;
 }
