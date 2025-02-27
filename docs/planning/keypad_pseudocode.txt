@@ -1,0 +1,70 @@
+keypad pseudocode
+
+char output
+
+struct pin_layout {
+    row_1 = P1.2 
+    row_2 = P1.3 
+    row_3 = P3.4 
+    row_4 = P4.5 
+    column_1 = 5.2 
+    column_2 = 3.6 
+    column_3 = 1.7 
+    column_4 = 1.6 
+}
+
+// repeatedly call in main, will power each row of the keypad in sequence
+function row_cycle {
+    unpower row_4, power row_1;
+    unpower row_1, power row_2;
+    unpower row_2, power row_3;
+    unpower row_3, power row_4;
+}
+
+// interrupts
+// port interrupt for each column that can be polled
+
+column_1_interrupt:
+    if row_1 = 1:
+        output = '1'
+    else if row_2 = 1:
+        output = '4'
+    else if row_3 = 1:
+        output = '7'
+    else if row_4 = 1:
+        output = '*'
+    else:
+        output = 'E'
+column_2_interrupt:
+    if row_1 = 1:
+        output = '2'
+    else if row_2 = 1:
+        output = '5'
+    else if row_3 = 1:
+        output = '8'
+    else if row_4 = 1:
+        output = '0'
+    else:
+        output = 'E'
+column_3_interrupt:
+    if row_1 = 1:
+        output = '3'
+    else if row_2 = 1:
+        output = '6'
+    else if row_3 = 1:
+        output = '9'
+    else if row_4 = 1:
+        output = '#'
+    else:
+        output = 'E'
+column_4_interrupt:
+    if row_1 = 1:
+        output = 'A'
+    else if row_2 = 1:
+        output = 'B'
+    else if row_3 = 1:
+        output = 'C'
+    else if row_4 = 1:
+        output = 'D'
+    else:
+        output = 'E'
