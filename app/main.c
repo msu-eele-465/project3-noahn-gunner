@@ -77,7 +77,7 @@ void array_init(void) {
     P3OUT |= Array_Pins;
     //array_Off();     // Start with LEDs off
 
-    /*
+    
     // Configure S1 (P4.1) as an input with pull-up resistor
     P4DIR &= ~BIT1;  // Set P4.1 as input
     P4REN |= BIT1;   // Enable pull-up/down resistor
@@ -87,7 +87,7 @@ void array_init(void) {
     P4IES |= BIT1;   // Trigger on high-to-low transition
     P4IFG &= ~BIT1;  // Clear interrupt flag
     P4IE |= BIT1;    // Enable interrupt for P4.1
-    */
+    
     setupTimer();    // Initialize Timer
 }
 
@@ -144,6 +144,8 @@ void updatePattern(void) {
 
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;  // Stop watchdog timer
+    PM5CTL0 &= ~LOCKLPM5;                   // Disable the GPIO power-on default high-impedance mode
+    //P3DIR |= (BIT0 | BIT1 | BIT2 | BIT3 | BIT4 | BIT5 | BIT6 | BIT7);
     array_init();              // Initialize LEDs and timer once
 
     selectPattern(Pattern_0_Static);  // Start with a default pattern
@@ -152,6 +154,7 @@ int main(void) {
 
     while (1) {
         // The ISR will handle LED updates, so no need for manual calls here
+        //P3OUT = 0b10101010;
     }
 }
 
@@ -162,7 +165,7 @@ __interrupt void Timer3_A0_ISR(void) {
     updatePattern();  // Call the update function on each interrupt
     TB3CCTL0 &= ~CCIFG;  // Clear interrupt flag
 }
-/*
+
 #pragma vector = PORT4_VECTOR
 __interrupt void ISR_Port4_S1(void) {
     P4IFG &= ~BIT1;  // Clear interrupt flag
@@ -174,4 +177,3 @@ __interrupt void ISR_Port4_S1(void) {
         selectPattern(current_pattern + 1);  // Move to the next pattern
     }
 }
-*/
