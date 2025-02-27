@@ -18,17 +18,33 @@ int main(void)
     init_keypad_irqs();
     __enable_interrupt();
 
+    int i;
+
     while(true)
     {  
         col_masking();
+
+        for(i=0; i<10000; i++) {}
+        
         lock_state();
+
+        for(i=0; i<10000; i++) {}
+        
+        prev_key = current_key;
+        
+        for(i=0; i<10000; i++) {}
+        
         row_cycle();
+        
+        for(i=0; i<10000; i++) {}
+
     }
 }
 
 //----Interrupt Service Routines
 #pragma vector = PORT1_VECTOR
 __interrupt void ISR_Port1_Column(void) {
+    
     col_masking();
     if (col_1 == 0) {
         if (current_row == 1) {

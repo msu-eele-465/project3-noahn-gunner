@@ -4,6 +4,7 @@
 
 // initialize vars
 char current_key = 'N';
+char prev_key = 'N';
 volatile int col_1 = BIT2;
 volatile int col_2 = BIT3;
 volatile int col_3 = BIT6;
@@ -12,6 +13,8 @@ volatile current_row = 0;
 // 0 = locked, 1 = unlocking, 2 = unlocked
 volatile int locked_state = 0;
 volatile int password_unlock = false;
+// current index of password
+volatile int pass_inx_char = 0;
 
 // initialize ports
 int init_keypad_ports(void) {
@@ -99,15 +102,41 @@ int col_masking(void) {
 
 // determine lock state
 int lock_state(void) {
-    if ((current_key == 'D') || (!password_unlock)) {
+    if ((current_key == 'D') && (prev_key != 'D')) {
+        // lock system if D is pressed
         locked_state = 0;
         password_unlock = false;
+        pass_inx_char = 0;
+    } else if (!password_unlock) {
+        // logic for inputting password (hard coded in lol)
+        if ((current_key == '1') && (prev_key != '1') && (pass_inx_char == 0)) {
+            pass_inx_char = 1;
+            locked_state = 1;
+        } else if ((current_key == '1') && (prev_key != '1') && (pass_inx_char != 0)) {
+            locked_state = 0;
+            pass_inx_char = 0;
+        } else if ((current_key == '2') && (prev_key != '2') && (pass_inx_char == 1)) {
+            pass_inx_char = 2;
+        } else if ((current_key == '2') && (prev_key != '2') && (pass_inx_char != 1)) {
+            locked_state = 0;
+            pass_inx_char = 0;
+        } else if ((current_key == '3') && (prev_key != '3') && (pass_inx_char == 2)) {
+            pass_inx_char = 3;
+        } else if ((current_key == '3') && (prev_key != '3') && (pass_inx_char != 2)) {
+            locked_state = 0;
+            pass_inx_char = 0;
+        } else if ((current_key == '4') && (prev_key != '4') && (pass_inx_char == 3)) {
+            locked_state = 2;
+            password_unlock = true;
+        } else if ((current_key == '4') && (prev_key != '4') && (pass_inx_char != 3)) {
+            locked_state = 0;
+            pass_inx_char = 0;
+        } 
     } else {
-        locked_state = 2;
+        // actual functionality logic goes here
+        // or maybe in another function idk yet lmao
     }
-    if (current_key == '1') {
-        password_unlock = true;
-    }
+    
     return 0;
 }
 
