@@ -30,28 +30,28 @@ static const unsigned char Pattern_3[6] = {     // In & Out
 
 // Timer3_B7 Configuration
 void setupTimer(void) {
-    TB3CTL |= TBCLR;
-    TB3CTL |= TBSSEL__SMCLK;
-    TB3CTL |= MC__UP;
-    TB3CTL |= CNTL_0;
+    TB2CTL |= TBCLR;
+    TB2CTL |= TBSSEL__SMCLK;
+    TB2CTL |= MC__UP;
+    TBCTL |= CNTL_0;
 
-    TB3CCR0 = 65535;    // ~ 1 sec
-    TB3EX0 |= TBIDEX__7;
+    TB2CCR0 = 65535;    // ~ 1 sec
+    TB2EX0 |= TBIDEX__7;
 
-    TB3CCTL0 |= CCIE;   // Clear ISR flag
-    TB3CCTL0 &= ~CCIFG;  // Enable interrupt
+    TB2CCTL0 |= CCIE;   // Clear ISR flag
+    TB2CCTL0 &= ~CCIFG;  // Enable interrupt
 
     __enable_interrupt();
 }
 
 // Function to Update Timer Period Dynamically
 void updateTimerPeriod(float new_period) {
-    TB3CCR0 |= CCIFG;   // Disable timer interrupt
+    TB2CCR0 |= CCIFG;   // Disable timer interrupt
     base_period = new_period;
 
-    TB3CCR0 = (unsigned int)(new_period * 65535);
-    TB3CCTL0 |= CCIE;   // Clr ISR flag
-    TB3CCTL0 &= ~CCIFG; // Enable interrupt
+    TB2CCR0 = (unsigned int)(new_period * 65535);
+    TB2CCTL0 |= CCIE;   // Clr ISR flag
+    TB2CCTL0 &= ~CCIFG; // Enable interrupt
 }
 
 void increaseTimerPeriod(void) {
@@ -160,10 +160,10 @@ int main(void) {
 
 
 // Timer3_B7 ISR (Triggers Pattern Updates)
-#pragma vector = TIMER3_B0_VECTOR
-__interrupt void Timer3_A0_ISR(void) {
+#pragma vector = TIMER2_B0_VECTOR
+__interrupt void Timer2_A0_ISR(void) {
     updatePattern();  // Call the update function on each interrupt
-    TB3CCTL0 &= ~CCIFG;  // Clear interrupt flag
+    TB2CCTL0 &= ~CCIFG;  // Clear interrupt flag
 }
 
 #pragma vector = PORT4_VECTOR
