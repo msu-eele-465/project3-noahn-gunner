@@ -11,13 +11,8 @@ void updateRGB(uint8_t r, uint8_t g, uint8_t b) {
     TB3CCR3 = (b * Max_PWM) / 255;  // Blue (P6.2)
 }
 
-
-// ISR for Button Press (S1 - P4.1)
-#pragma vector = PORT4_VECTOR
-__interrupt void ISR_Port4_S1(void) {
-    system_state = (system_state + 1) % 3; // Cycle through 3 states
-
-    // Set RGB LED color based on state (scaled from hex values)
+// change LED color
+void LEDState(void) {
     switch (system_state) {
         case STATE_LOCKED:
             updateRGB(196, 62, 29);  // #c43e1d
@@ -29,19 +24,6 @@ __interrupt void ISR_Port4_S1(void) {
             updateRGB(29, 162, 196); // #1da2c4
             break;
     }
-
-    P4IFG &= ~BIT1; // Clear interrupt flag
-}
-
-
-// Function to Setup Button Interrupt
-void setupButtonInterrupt(void) {
-    P4DIR &= ~BIT1;  // Set P4.1 (S1) as input
-    P4REN |= BIT1;
-    P4OUT |= BIT1;
-    P4IES |= BIT1;
-    P4IFG &= ~BIT1;
-    P4IE |= BIT1;
 }
 
 // Function to Setup RGB LED
@@ -60,6 +42,4 @@ void setupRGBLED(void) {
 
     // Set initial state to "Locked" color
     updateRGB(196, 62, 29);  // #c43e1d
-
-    setupButtonInterrupt(); // Setup S1 button interrupt
 }

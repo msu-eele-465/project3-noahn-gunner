@@ -6,6 +6,18 @@
 #include "../src/keypad.c"
 #include "intrinsics.h"
 
+// puts together system_state and locked_state
+int state_sync(void) {
+    if (locked_state == 0) {
+        system_state = STATE_LOCKED;
+    } else if (locked_state == 1) {
+        system_state = STATE_UNLOCKING;
+    } else if (locked_state == 2) {
+        system_state = STATE_UNLOCKED;
+    }
+    return 0;
+}
+
 int main(void) {
     // Stop watchdog timer
     WDTCTL = WDTPW | WDTHOLD;               // Stop watchdog timer
@@ -34,8 +46,6 @@ int main(void) {
     __enable_interrupt();
 
     int i;
-    // Enable low-power mode with global interrupts
-    _BIS_SR((LPM0_bits | GIE));
   
     while(true)
     {  
@@ -44,6 +54,8 @@ int main(void) {
         for(i=0; i<10000; i++) {}
         
         lock_state();
+        state_sync();
+        LEDState();
 
         for(i=0; i<10000; i++) {}
         
