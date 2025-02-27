@@ -165,6 +165,8 @@ int state_sync(void) {
         system_state = STATE_UNLOCKED_6;
     } else if (locked_state == 8) {
         system_state = STATE_UNLOCKED_7;
+    } else if (locked_state == 9) {
+        system_state = STATE_UNLOCKED_0;
     }
     return 0;
 }
@@ -180,6 +182,8 @@ int sync_LED(void) {
         selectPattern(Pattern_2_Up);
     } else if ((prev_state != 4) && (locked_state == 4)) {
         selectPattern(Pattern_3_In_Out);
+    } else if ((prev_state != 9) && (locked_state == 9)) {
+        selectPattern(Pattern_0_Static);
     }
     return 0;
 }

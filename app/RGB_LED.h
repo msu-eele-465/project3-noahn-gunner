@@ -15,6 +15,7 @@
 #define STATE_UNLOCKED_5 6
 #define STATE_UNLOCKED_6 7
 #define STATE_UNLOCKED_7 8
+#define STATE_UNLOCKED_0 9
 
 // PWM Configurations
 #define Max_PWM (1000) // Max brightness

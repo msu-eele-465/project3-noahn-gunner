@@ -159,9 +159,11 @@ int button_logic() {
         locked_state = 7;
     } else if ((current_key == '7') && (prev_key != '7')) {
         locked_state = 8;
-    } else if ((current_key == '*') && (prev_key != '*')) {
+    } else if ((current_key == '0') && (prev_key != '0')) {
+        locked_state = 9;
+    } else if ((current_key == 'A') && (prev_key != 'A')) {
         LED_speed = 1;
-    } else if ((current_key == '#') && (prev_key != '#')) {
+    } else if ((current_key == 'B') && (prev_key != 'B')) {
         LED_speed = 2;
         
     }
