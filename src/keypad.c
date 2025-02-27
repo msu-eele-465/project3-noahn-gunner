@@ -19,15 +19,15 @@ volatile int pass_inx_char = 0;
 // initialize ports
 int init_keypad_ports(void) {
     // rows (outputs for row_cycle)
-    P3DIR |= BIT4; // set 3.4 as output
-    P4DIR |= BIT5; // set 4.5 as output 
+    P5DIR |= BIT1; // set 5.1 as output
+    P5DIR |= BIT3; // set 5.3 as output 
     P5DIR |= BIT2; // set 5.2 as output
-    P3DIR |= BIT6; // set 3.6 as output 
+    P5DIR |= BIT0; // set 5.0 as output 
      
-    P3OUT &= ~BIT4; // turn 3.4 off
-    P4OUT &= ~BIT5; // turn 4.5 off
+    P5OUT &= ~BIT1; // turn 5.1 off
+    P5OUT &= ~BIT3; // turn 5.3 off
     P5OUT &= ~BIT2; // turn 5.2 off
-    P3OUT &= ~BIT6; // turn 3.6 off
+    P5OUT &= ~BIT0; // turn 5.0 off
 
     // columns (inputs for polling)
     P1DIR &= ~BIT2; // set 1.2 as output
@@ -66,21 +66,21 @@ int init_keypad_irqs(void) {
 // cycle through rows turn on/off
 int row_cycle(void) {
     current_row = 1;
-    P3OUT |= BIT4; // turn 3.4 on
-    P3OUT &= ~BIT4; // turn 3.4 off
+    P5OUT |= BIT1; // turn 5.1 on
+    P5OUT &= ~BIT1; // turn 5.1 off
     int i;
     for(i=0; i<10000; i++) {}
     current_row = 2;
-    P4OUT |= BIT5; // turn 4.5 on
-    P4OUT &= ~BIT5; // turn 4.5 off
+    P5OUT |= BIT3; // turn 5.3 on
+    P5OUT &= ~BIT3; // turn 5.3 off
     for(i=0; i<10000; i++) {}
     current_row = 3;
     P5OUT |= BIT2; // turn 5.2 on
     P5OUT &= ~BIT2; // turn 5.2 off
     for(i=0; i<10000; i++) {}
     current_row = 4;
-    P3OUT |= BIT6; // turn 3.6 on
-    P3OUT &= ~BIT6; // turn 3.6 off
+    P5OUT |= BIT0; // turn 5.0 on
+    P5OUT &= ~BIT0; // turn 5.0 off
     for(i=0; i<10000; i++) {}
 
     return 0;
