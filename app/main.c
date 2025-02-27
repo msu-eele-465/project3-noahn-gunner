@@ -273,3 +273,9 @@ __interrupt void Timer2_A0_ISR(void) {
     updatePattern();  // Call the update function on each interrupt
     TB2CCTL0 &= ~CCIFG;  // Clear interrupt flag
 }
+
+#pragma vector = TIMER0_B1_VECTOR
+__interrupt void ISR_TB0_Overflow(void) {
+    P1OUT ^= BIT0;
+    TB0CTL &= ~TBIFG;
+}
