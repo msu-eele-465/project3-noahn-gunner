@@ -1,3 +1,4 @@
+#include "RGB_LED.h"
 #include "intrinsics.h"
 #include <msp430.h>
 #include <stdio.h>
@@ -5,8 +6,7 @@
 #include "../src/keypad.c"
 #include "intrinsics.h"
 
-int main(void)
-{
+int main(void) {
     // Stop watchdog timer
     WDTCTL = WDTPW | WDTHOLD;               // Stop watchdog timer
 
@@ -15,6 +15,7 @@ int main(void)
     P1OUT &= ~BIT0;     // Clear P1.0
 
     init_keypad_ports();
+    setupRGBLED();  // Initialize RGB LED
     
     // Disable the GPIO power-on default high-impedance mdoe to activate
     // previously configure port settings
@@ -33,7 +34,9 @@ int main(void)
     __enable_interrupt();
 
     int i;
-
+    // Enable low-power mode with global interrupts
+    _BIS_SR((LPM0_bits | GIE));
+  
     while(true)
     {  
         col_masking();
